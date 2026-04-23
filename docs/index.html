@@ -934,10 +934,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (specsPanel && codingPanel) {
     const specsTable = specsPanel.querySelector('table');
     const codingTable = codingPanel.querySelector('table');
-    const specsBody = specsTable?.tBodies?.[0];
-    const codingRows = codingTable?.tBodies?.[0]?.rows;
-    if (specsBody && codingRows?.length) {
-      Array.from(codingRows).forEach((row) => specsBody.appendChild(row));
+    if (specsTable && codingTable) {
+      const specsBody = specsTable.tBodies[0];
+      const codingRows = codingTable.tBodies[0]?.rows;
+      if (specsBody && codingRows?.length) {
+        Array.from(codingRows).forEach((row) => specsBody.appendChild(row));
+      }
     }
     codingPanel.remove();
   }
