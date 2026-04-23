@@ -116,7 +116,7 @@
       <span class="badge new">K2.6 NEW</span>
       <span class="badge tl">Qwen3.6 ★3 MODELS</span>
     </div>
-    <h1>LLM比較（シンプル版）</h1>
+    <h1>中国系 LLM vs Claude（シンプル版）</h1>
     <div class="subtitle">左固定: Opus4.6 / Sonnet4.6 / Opus4.5 / Sonnet4.5（不足データは「—」）</div>
   </div>
 
@@ -133,7 +133,7 @@
   <div class="panel active" id="panel-specs"><div class="table-wrap"><table>
     <thead><tr>
       <th class="rl">項目</th>
-      <th class="sc">Sonnet 4.6</th>
+      <th class="sc" data-m="sonnet46">Sonnet 4.6</th>
       <th data-m="glm51">GLM-5.1</th>
       <th data-m="glm5">GLM-5</th>
       <th data-m="k26">Kimi K2.6★</th>
@@ -318,7 +318,7 @@
   <div class="panel" id="panel-coding"><div class="table-wrap"><table>
     <thead><tr>
       <th class="rl">ベンチマーク</th>
-      <th class="sc">Sonnet 4.6</th>
+      <th class="sc" data-m="sonnet46">Sonnet 4.6</th>
       <th data-m="glm51">GLM-5.1</th>
       <th data-m="glm5">GLM-5</th>
       <th data-m="k26">Kimi K2.6★</th>
@@ -410,7 +410,7 @@
   <div class="panel" id="panel-math"><div class="table-wrap"><table>
     <thead><tr>
       <th class="rl">ベンチマーク</th>
-      <th class="sc">Sonnet 4.6</th>
+      <th class="sc" data-m="sonnet46">Sonnet 4.6</th>
       <th data-m="glm51">GLM-5.1</th>
       <th data-m="glm5">GLM-5</th>
       <th data-m="k26">Kimi K2.6★</th>
@@ -513,7 +513,7 @@
   <div class="panel" id="panel-agent"><div class="table-wrap"><table>
     <thead><tr>
       <th class="rl">ベンチマーク</th>
-      <th class="sc">Sonnet 4.6</th>
+      <th class="sc" data-m="sonnet46">Sonnet 4.6</th>
       <th data-m="glm51">GLM-5.1</th>
       <th data-m="glm5">GLM-5</th>
       <th data-m="k26">Kimi K2.6★</th>
@@ -627,7 +627,7 @@
   <div class="panel" id="panel-local"><div class="table-wrap"><table>
     <thead><tr>
       <th class="rl">項目</th>
-      <th class="sc">Sonnet 4.6<br><small style="color:var(--text-dim);">参考(API only)</small></th>
+      <th class="sc" data-m="sonnet46">Sonnet 4.6<br><small style="color:var(--text-dim);">参考(API only)</small></th>
       <th data-m="q35" class="gd-l" style="border-top:2px solid var(--teal);">Qwen3.6-35B-A3B<br><span class="local-badge">🖥 LOCAL</span></th>
       <th data-m="q27" style="border-top:2px solid #4db6ac;">Qwen3.6-27B<br><span class="local-badge">🖥 LOCAL</span></th>
     </tr></thead>
@@ -847,7 +847,7 @@ function makeNaCell() {
 
 function addFixedLeftColumns(table) {
   const headerRow = table.tHead.rows[0];
-  const sonnet46Th = headerRow.cells[1];
+  const sonnet46Th = headerRow.querySelector('th[data-m="sonnet46"]');
   if (!sonnet46Th || headerRow.querySelector('[data-m="opus46"]')) return;
 
   const opus46Th = document.createElement('th');
@@ -863,20 +863,23 @@ function addFixedLeftColumns(table) {
   sonnet45Th.textContent = 'Sonnet 4.5';
 
   headerRow.insertBefore(opus46Th, sonnet46Th);
-  headerRow.insertBefore(opus45Th, sonnet46Th.nextSibling);
-  headerRow.insertBefore(sonnet45Th, opus45Th.nextSibling);
+  const afterSonnet46 = sonnet46Th.nextSibling;
+  headerRow.insertBefore(opus45Th, afterSonnet46);
+  headerRow.insertBefore(sonnet45Th, afterSonnet46);
 
   table.tBodies[0].querySelectorAll('tr').forEach((row) => {
     if (row.cells.length < 2) return;
     const second = row.cells[1];
     if (second.hasAttribute('colspan')) {
-      second.colSpan = Number(second.colSpan) + 3;
+      const currentColspan = Number(second.colSpan || second.getAttribute('colspan') || 0);
+      second.colSpan = (Number.isFinite(currentColspan) && currentColspan > 0 ? currentColspan : 1) + 3;
       return;
     }
     const sonnet46Td = row.cells[1];
     row.insertBefore(makeNaCell(), sonnet46Td);
-    row.insertBefore(makeNaCell(), sonnet46Td.nextSibling);
-    row.insertBefore(makeNaCell(), sonnet46Td.nextSibling);
+    const afterSonnet46Td = sonnet46Td.nextSibling;
+    row.insertBefore(makeNaCell(), afterSonnet46Td);
+    row.insertBefore(makeNaCell(), afterSonnet46Td);
   });
 }
 
@@ -893,7 +896,7 @@ function reorderColumns(table) {
 
   headerCells.forEach((cell, idx) => {
     if (idx === 0) return;
-    const key = cell.dataset.m || (cell.classList.contains('sc') ? 'sonnet46' : null);
+    const key = cell.dataset.m || null;
     if (key) indexByKey[key] = idx;
   });
 
@@ -919,9 +922,7 @@ function reorderColumns(table) {
 
 function removePanelsAndTabs() {
   ['math', 'agent', 'local', 'summary'].forEach((id) => {
-    const tab = document.querySelector(`.tab[onclick="sp('${id}',this)"]`);
     const panel = document.getElementById(`panel-${id}`);
-    if (tab) tab.remove();
     if (panel) panel.remove();
   });
 }
