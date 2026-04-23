@@ -932,8 +932,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const specsPanel = document.getElementById('panel-specs');
   const codingPanel = document.getElementById('panel-coding');
   if (specsPanel && codingPanel) {
-    const specsTable = specsPanel?.querySelector('table');
-    const codingTable = codingPanel?.querySelector('table');
+    const specsTable = specsPanel.querySelector('table');
+    const codingTable = codingPanel.querySelector('table');
     const specsBody = specsTable?.tBodies?.[0];
     const codingRows = codingTable?.tBodies?.[0]?.rows;
     if (specsBody && codingRows?.length) {
