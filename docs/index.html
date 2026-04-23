@@ -932,17 +932,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const specsPanel = document.getElementById('panel-specs');
   const codingPanel = document.getElementById('panel-coding');
   if (specsPanel && codingPanel) {
-    const codingWrap = codingPanel.querySelector('.table-wrap');
-    if (codingWrap) {
-      const title = document.createElement('div');
-      title.style.margin = '16px 0 8px';
-      title.style.fontFamily = 'var(--mono)';
-      title.style.fontSize = '10px';
-      title.style.color = 'var(--green)';
-      title.style.letterSpacing = '1px';
-      title.textContent = '── CODING';
-      specsPanel.appendChild(title);
-      specsPanel.appendChild(codingWrap);
+    const specsTable = specsPanel.querySelector('table');
+    const codingTable = codingPanel.querySelector('table');
+    if (specsTable && codingTable) {
+      const specsBody = specsTable.querySelector('tbody');
+      const codingBody = codingTable.querySelector('tbody');
+      if (specsBody && codingBody) {
+        const codingRows = Array.from(codingBody.rows);
+        if (codingRows.length) {
+          codingRows.forEach((row) => specsBody.appendChild(row));
+        }
+      }
     }
     codingPanel.remove();
   }
