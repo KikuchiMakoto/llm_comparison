@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Noto+Sans+JP:wght@300;400;600&display=swap');
+  :root {
+    --bg:#0a0c0e;--bg2:#0f1215;--border:#1e2832;--border2:#2a3540;
+    --green:#00e676;--green-dim:#00c853;--green-muted:#1a3d2a;
+    --amber:#ffab40;--amber-muted:#3d2a00;--red:#ff5252;
+    --blue:#40c4ff;--blue-muted:#0a2a3d;
+    --teal:#00bfa5;--teal-muted:#003d35;--teal-dim:#00897b;
+    --text:#c8d8e0;--text-dim:#607080;--text-bright:#e8f4ff;
+    --header-bg:#0d1820;
+    --mono:'JetBrains Mono',monospace;--sans:'Noto Sans JP',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.5;}
+  .container{max-width:1600px;margin:0 auto;padding:20px;}
+  .header{border-bottom:1px solid var(--border2);padding-bottom:14px;margin-bottom:20px;}
+  .header-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px;}
+  .badge{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:2px;letter-spacing:1px;}
+  .badge.gr{background:var(--green-muted);color:var(--green);border:1px solid var(--green-dim);}
+  .badge.am{background:var(--amber-muted);color:var(--amber);border:1px solid var(--amber);}
+  .badge.new{background:#1a0d2e;color:#ce93d8;border:1px solid #ab47bc;}
+  .badge.tl{background:var(--teal-muted);color:var(--teal);border:1px solid var(--teal-dim);}
+  h1{font-family:var(--mono);font-size:16px;color:var(--text-bright);font-weight:500;letter-spacing:.5px;}
+  .subtitle{font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:3px;}
+  .tabs{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);}
+  .tab{font-family:var(--mono);font-size:10.5px;padding:7px 13px;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;letter-spacing:.3px;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--green);border-bottom-color:var(--green);}
+  .panel{display:none;}.panel.active{display:block;}
+  .warn{border:1px solid var(--amber);background:var(--amber-muted);padding:8px 14px;border-radius:3px;margin-bottom:16px;font-size:10.5px;color:var(--amber);font-family:var(--mono);line-height:1.6;}
+  .warn strong{color:#ffd180;}
+  .table-wrap{overflow-x:auto;}
+  table{border-collapse:collapse;font-family:var(--mono);font-size:10.5px;white-space:nowrap;}
+  thead th{background:var(--header-bg);color:var(--text-dim);padding:7px 8px;text-align:center;border-bottom:1px solid var(--border2);border-right:1px solid var(--border);font-weight:400;letter-spacing:.2px;}
+  thead th.rl{text-align:left;background:#0b1219;min-width:155px;max-width:155px;}
+  thead th.sc{color:var(--blue);background:var(--blue-muted);border-top:2px solid var(--blue);}
+  /* model color tops */
+  th[data-m="glm51"]{border-top:2px solid #ff6e40;}
+  th[data-m="glm5"]{border-top:2px solid #ff8a65;}
+  th[data-m="k26"]{border-top:2px solid #ab47bc;}
+  th[data-m="k25"]{border-top:2px solid #ce93d8;}
+  th[data-m="m27"]{border-top:2px solid #29b6f6;}
+  th[data-m="m25"]{border-top:2px solid #4fc3f7;}
+  th[data-m="step"]{border-top:2px solid #66bb6a;}
+  th[data-m="qp"]{border-top:2px solid var(--teal);color:var(--teal)!important;}
+  th[data-m="q35"]{border-top:2px solid #26a69a;}
+  th[data-m="q27"]{border-top:2px solid #4db6ac;}
+  /* group dividers */
+  td.gd-l{border-left:2px solid var(--border2)!important;}
+  thead th.gd-l{border-left:2px solid var(--border2)!important;}
+  tbody tr{border-bottom:1px solid var(--border);}
+  tbody tr:hover{background:rgba(255,255,255,.02);}
+  td{padding:6px 8px;border-right:1px solid var(--border);text-align:center;color:var(--text);}
+  td.rl{text-align:left;color:var(--text-dim);background:#0b1219;font-size:10px;padding-left:10px;}
+  td.rl .cat{color:#3a5060;font-size:8.5px;display:block;}
+  td.sc{background:rgba(64,196,255,.04);color:var(--blue);}
+  td.qc{background:rgba(0,191,165,.04);color:var(--teal);}
+  td.qc2{background:rgba(0,191,165,.02);}
+  .g{color:var(--green);font-weight:600;}
+  .gd2{color:#69f0ae;}
+  .am2{color:var(--amber);}
+  .rd{color:var(--red);}
+  .bl{color:var(--blue);}
+  .tl2{color:var(--teal);font-weight:600;}
+  .dm{color:var(--text-dim);}
+  .na{color:#2e3d46;font-style:italic;font-size:9.5px;}
+  .est{color:#505c64;}
+  /* ratio */
+  .rx{display:inline-block;font-size:9.5px;padding:1px 4px;border-radius:2px;font-family:var(--mono);font-weight:600;}
+  .rx.ch{background:var(--green-muted);color:var(--green);}
+  .rx.ba{background:var(--blue-muted);color:var(--blue);}
+  .rx.tl{background:var(--teal-muted);color:var(--teal);}
+  /* tags */
+  .tag-o{display:inline-block;font-size:7.5px;padding:0 3px;border-radius:1px;background:var(--green-muted);color:var(--green);}
+  .tag-p{display:inline-block;font-size:7.5px;padding:0 3px;border-radius:1px;background:var(--blue-muted);color:var(--blue);}
+  .tag-nc{display:inline-block;font-size:7.5px;padding:0 3px;border-radius:1px;background:#2a1a00;color:#ffab40;}
+  .tag-ap{display:inline-block;font-size:7.5px;padding:0 3px;border-radius:1px;background:var(--teal-muted);color:var(--teal);}
+  .tag-new{display:inline-block;font-size:7.5px;padding:0 3px;border-radius:1px;background:#1a0d2e;color:#ce93d8;border:1px solid #7b1fa2;}
+  /* section rows */
+  tr.sh td{background:#0d1520;color:#40e0a0;font-size:8.5px;letter-spacing:1.5px;padding:3px 8px;border-bottom:1px solid var(--border2);}
+  tr.sh td.rl{background:#0d1520;color:#40e0a0;}
+  .hl td{background:rgba(0,200,83,.035);}
+  .hl td.sc{background:rgba(64,196,255,.06);}
+  .hl td.qc{background:rgba(0,191,165,.07);}
+  .hl td.qc2{background:rgba(0,191,165,.05);}
+  /* local badge */
+  .local-badge{display:inline-block;font-size:8px;padding:1px 4px;background:#1a2d1a;color:#a5d6a7;border:1px solid #388e3c;border-radius:2px;}
+
+  /* info cards */
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:12px;margin-top:18px;}
+  .info-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:11px;}
+  .info-card h3{font-family:var(--mono);font-size:10px;letter-spacing:1px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+  .ir{display:flex;justify-content:space-between;padding:2.5px 0;font-family:var(--mono);font-size:10px;border-bottom:1px solid rgba(255,255,255,.025);}
+  .ir .lb{color:var(--text-dim);}
+  .ir .vl{color:var(--text-bright);}
+  /* rec grid */
+  .rec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-family:var(--mono);font-size:10.5px;margin-top:6px;}
+  .rc{padding:8px;background:#0d1820;border:1px solid var(--border);border-radius:3px;}
+  .rc .rt{color:var(--amber);margin-bottom:4px;font-size:10.5px;}
+  /* footnotes */
+  .fn-box{margin-top:16px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:3px;font-size:9.5px;color:var(--text-dim);font-family:var(--mono);line-height:1.7;}
+  .fn-box .fn{color:var(--amber);}
+  sup{font-size:8px;color:var(--amber);}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-top">
+      <span class="badge gr">LLM COMPARE</span>
+      <span class="badge am">2026-04-21</span>
+      <span class="badge new">K2.6 NEW</span>
+      <span class="badge tl">Qwen3.6 ★3 MODELS</span>
+    </div>
+    <h1>中国系 LLM vs Claude Sonnet 4.6 ── 11モデル比較</h1>
+    <div class="subtitle">Sonnet 4.6(基準) / GLM-5.1 / GLM-5 / Kimi K2.6★ / K2.5 / MiniMax M2.7 / M2.5 / Step 3.5 Flash / <span style="color:var(--teal);">Qwen3.6-Plus★ / 35B-A3B★(ローカル) / 27B★(ローカル)</span></div>
+  </div>
+
+  <div class="warn">
+    <strong>⚠ ベンチマーク信頼性</strong> ── ほぼ全スコアが各ラボ自己申告値。Qwen3.6-27Bは<strong>本日(2026-04-21)公開</strong>、K2.6は4/20公開のため独立検証なし。
+    <strong>N/A</strong>=未公開。<strong>*</strong>=推計。ローカルモデル価格は<strong>APIコスト0</strong>(ハードウェア/電力コスト別途)。
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="sp('specs',this)">SPECS &amp; PRICE</button>
+    <button class="tab" onclick="sp('coding',this)">CODING</button>
+    <button class="tab" onclick="sp('math',this)">MATH &amp; SCIENCE</button>
+    <button class="tab" onclick="sp('agent',this)">AGENT &amp; GENERAL</button>
+    <button class="tab" onclick="sp('local',this)">LOCAL MODEL INFO</button>
+    <button class="tab" onclick="sp('summary',this)">SUMMARY</button>
+  </div>
+
+  <!-- ══ SPECS ══ -->
+  <div class="panel active" id="panel-specs"><div class="table-wrap"><table>
+    <thead><tr>
+      <th class="rl">項目</th>
+      <th class="sc">Sonnet 4.6</th>
+      <th data-m="glm51">GLM-5.1</th>
+      <th data-m="glm5">GLM-5</th>
+      <th data-m="k26">Kimi K2.6★</th>
+      <th data-m="k25">Kimi K2.5</th>
+      <th data-m="m27">MiniMax M2.7</th>
+      <th data-m="m25">MiniMax M2.5</th>
+      <th data-m="step">Step 3.5F</th>
+      <th data-m="qp" class="gd-l">Qwen3.6 Plus★</th>
+      <th data-m="q35">Q3.6-35B-A3B★</th>
+      <th data-m="q27">Q3.6-27B★</th>
+    </tr></thead>
+    <tbody>
+      <tr class="sh"><td class="rl">──── 基本情報</td><td colspan="11"></td></tr>
+      <tr>
+        <td class="rl">開発元</td>
+        <td class="sc bl">Anthropic</td>
+        <td>Z AI</td><td>Z AI</td>
+        <td style="color:#ce93d8;">Moonshot</td><td>Moonshot</td>
+        <td>MiniMax</td><td>MiniMax</td><td>StepFun</td>
+        <td class="qc tl2 gd-l">Alibaba</td><td class="qc2">Alibaba</td><td class="qc2">Alibaba</td>
+      </tr>
+      <tr>
+        <td class="rl">リリース</td>
+        <td class="sc">2026-02-17</td>
+        <td>2026-04-07</td><td>2026-02-11</td>
+        <td class="am2">2026-04-20</td><td>2026-01-27</td>
+        <td>2026-03-18</td><td>2026-02-12</td><td>2026-01-29</td>
+        <td class="qc gd-l">2026-04-02</td>
+        <td class="qc2">2026-04-16</td>
+        <td class="qc2 am2">2026-04-21<br><span style="font-size:8px;color:#607080;">本日</span></td>
+      </tr>
+      <tr>
+        <td class="rl">ライセンス</td>
+        <td class="sc"><span class="tag-p">Prop.</span></td>
+        <td><span class="tag-o">MIT</span></td><td><span class="tag-o">MIT</span></td>
+        <td><span class="tag-o">Mod.MIT</span></td><td><span class="tag-o">Mod.MIT</span></td>
+        <td><span class="tag-nc">非商用</span></td><td><span class="tag-o">OW</span></td><td><span class="tag-o">Open</span></td>
+        <td class="qc gd-l"><span class="tag-p">Prop.</span><br><span style="font-size:8px;color:var(--teal);">Preview無料</span></td>
+        <td class="qc2"><span class="tag-ap">Apache 2.0</span></td>
+        <td class="qc2"><span class="tag-ap">Apache 2.0</span></td>
+      </tr>
+      <tr>
+        <td class="rl">形態</td>
+        <td class="sc">API</td>
+        <td>API/OW</td><td>API/OW</td>
+        <td>API/OW</td><td>API/OW</td>
+        <td>API</td><td>API/OW</td><td>API/OW</td>
+        <td class="qc gd-l">API</td>
+        <td class="qc2"><span class="local-badge">🖥 LOCAL可</span><br>API</td>
+        <td class="qc2"><span class="local-badge">🖥 LOCAL可</span><br>API</td>
+      </tr>
+      <tr class="sh"><td class="rl">──── アーキテクチャ</td><td colspan="11"></td></tr>
+      <tr>
+        <td class="rl">総パラメータ</td>
+        <td class="sc dm">非公開</td>
+        <td>744B</td><td>744B</td><td class="g">1T</td><td>1T</td>
+        <td>230B</td><td>230B</td><td>196B</td>
+        <td class="qc gd-l dm">非公開</td>
+        <td class="qc2">35B</td>
+        <td class="qc2">27B</td>
+      </tr>
+      <tr>
+        <td class="rl">アクティブParam</td>
+        <td class="sc dm">—</td>
+        <td class="am2">40B</td><td class="am2">40B</td>
+        <td class="gd2">32B</td><td class="gd2">32B</td>
+        <td class="g">10B</td><td class="g">10B</td><td class="g">11B</td>
+        <td class="qc gd-l dm">—</td>
+        <td class="qc2 tl2">3B</td>
+        <td class="qc2 am2">27B<br><span style="font-size:8px;color:#607080;">Dense</span></td>
+      </tr>
+      <tr>
+        <td class="rl">構造</td>
+        <td class="sc dm">?</td>
+        <td>MoE</td><td>MoE</td>
+        <td>MoE<br><small style="font-size:8px;color:#607080;">MoonViT</small></td>
+        <td>MoE</td>
+        <td>MoE</td><td>MoE</td>
+        <td>MoE<br><small style="font-size:8px;color:#607080;">SWA 3:1</small></td>
+        <td class="qc gd-l">Hybrid<br><small style="font-size:8px;color:var(--teal);">DeltaNet+MoE</small></td>
+        <td class="qc2">MoE<br><small style="font-size:8px;color:var(--teal);">DeltaNet+MoE</small></td>
+        <td class="qc2 tl2">Dense<br><small style="font-size:8px;color:var(--teal);">DeltaNet+Attn</small></td>
+      </tr>
+      <tr>
+        <td class="rl">コンテキスト長</td>
+        <td class="sc bl">1M(β)/200K</td>
+        <td>200K</td><td>200K</td>
+        <td class="g">256K</td><td class="gd2">256K</td>
+        <td>200K</td><td>200K</td><td class="gd2">256K</td>
+        <td class="qc gd-l tl2">1M ネイティブ</td>
+        <td class="qc2">262K<br><small style="font-size:8px;color:var(--teal);">→1M(YaRN)</small></td>
+        <td class="qc2">262K<br><small style="font-size:8px;color:var(--teal);">→1M(YaRN)</small></td>
+      </tr>
+      <tr>
+        <td class="rl">マルチモーダル</td>
+        <td class="sc">テキスト・画像</td>
+        <td class="na">テキストのみ</td><td class="na">テキストのみ</td>
+        <td class="g">テキスト・画像<br>・動画</td>
+        <td class="gd2">テキスト・画像</td>
+        <td class="na">テキストのみ</td><td class="na">テキストのみ</td><td class="na">テキストのみ</td>
+        <td class="qc gd-l tl2">テキスト・画像<br>・動画</td>
+        <td class="qc2 tl2">テキスト・画像<br>・動画</td>
+        <td class="qc2 tl2">テキスト・画像<br>・動画</td>
+      </tr>
+      <tr class="sh"><td class="rl">──── 料金 ($/M tokens)</td><td colspan="11"></td></tr>
+      <tr>
+        <td class="rl">Input ($/M)</td>
+        <td class="sc rd">$3.00</td>
+        <td>$0.95</td><td>$1.00</td>
+        <td class="gd2">$0.60</td><td class="gd2">$0.60</td>
+        <td class="g">$0.30</td><td class="g">$0.30</td>
+        <td class="g">$0.10</td>
+        <td class="qc gd-l tl2">$0.325<sup>①</sup></td>
+        <td class="qc2 tl2">$0.163<sup>②</sup></td>
+        <td class="qc2 tl2">未発表<sup>③</sup><br><span style="color:var(--green);font-size:9px;">LOCAL:$0</span></td>
+      </tr>
+      <tr>
+        <td class="rl">Output ($/M)</td>
+        <td class="sc rd">$15.00</td>
+        <td>$3.15</td><td>$3.20</td>
+        <td class="gd2">$2.80</td><td class="gd2">$2.50</td>
+        <td class="g">$1.20</td><td class="g">$1.20</td>
+        <td class="g">$0.30</td>
+        <td class="qc gd-l tl2">$1.95<sup>①</sup></td>
+        <td class="qc2 tl2">$1.30<sup>②</sup></td>
+        <td class="qc2 tl2">未発表<br><span style="color:var(--green);font-size:9px;">LOCAL:$0</span></td>
+      </tr>
+      <tr class="hl">
+        <td class="rl">Input コスト比<span class="cat">Sonnet 4.6=基準</span></td>
+        <td class="sc"><span class="rx ba">x1.0</span></td>
+        <td><span class="rx ch">x3.2</span></td><td><span class="rx ch">x3.0</span></td>
+        <td><span class="rx ch">x5.0</span></td><td><span class="rx ch">x5.0</span></td>
+        <td><span class="rx ch">x10</span></td><td><span class="rx ch">x10</span></td>
+        <td><span class="rx ch">x30</span></td>
+        <td class="qc gd-l"><span class="rx tl">x9.2</span></td>
+        <td class="qc2"><span class="rx tl">x18.5</span></td>
+        <td class="qc2"><span class="rx tl">∞<br><small style="font-size:8px;">LOCAL</small></span></td>
+      </tr>
+      <tr class="hl">
+        <td class="rl">Output コスト比</td>
+        <td class="sc"><span class="rx ba">x1.0</span></td>
+        <td><span class="rx ch">x4.8</span></td><td><span class="rx ch">x4.7</span></td>
+        <td><span class="rx ch">x5.4</span></td><td><span class="rx ch">x6.0</span></td>
+        <td><span class="rx ch">x12.5</span></td><td><span class="rx ch">x12.5</span></td>
+        <td><span class="rx ch">x50</span></td>
+        <td class="qc gd-l"><span class="rx tl">x7.7</span></td>
+        <td class="qc2"><span class="rx tl">x11.5</span></td>
+        <td class="qc2"><span class="rx tl">∞<br><small style="font-size:8px;">LOCAL</small></span></td>
+      </tr>
+      <tr class="sh"><td class="rl">──── 推論速度</td><td colspan="11"></td></tr>
+      <tr>
+        <td class="rl">出力速度 (t/s)</td>
+        <td class="sc dm">~55*</td>
+        <td>46</td><td>62</td><td class="na">—</td><td>37</td>
+        <td>50</td><td class="gd2">65</td><td class="g">183🚀</td>
+        <td class="qc gd-l">53</td>
+        <td class="qc2 tl2">215🚀</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">TTFT (s)</td>
+        <td class="sc dm">~1.5*</td>
+        <td>1.68</td><td>1.72</td><td class="na">—</td><td>2.82</td>
+        <td>2.10</td><td>1.85</td><td class="g">1.08</td>
+        <td class="qc gd-l">2.82</td>
+        <td class="qc2">2.67</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">AA Intelligence Index</td>
+        <td class="sc bl">52</td>
+        <td>51</td><td>50</td><td class="na">—</td><td>47</td>
+        <td>50</td><td>42</td><td>38</td>
+        <td class="qc gd-l tl2">50</td>
+        <td class="qc2">43</td>
+        <td class="qc2 na">—</td>
+      </tr>
+    </tbody>
+  </table></div></div>
+
+  <!-- ══ CODING ══ -->
+  <div class="panel" id="panel-coding"><div class="table-wrap"><table>
+    <thead><tr>
+      <th class="rl">ベンチマーク</th>
+      <th class="sc">Sonnet 4.6</th>
+      <th data-m="glm51">GLM-5.1</th>
+      <th data-m="glm5">GLM-5</th>
+      <th data-m="k26">Kimi K2.6★</th>
+      <th data-m="k25">Kimi K2.5</th>
+      <th data-m="m27">MiniMax M2.7</th>
+      <th data-m="m25">MiniMax M2.5</th>
+      <th data-m="step">Step 3.5F</th>
+      <th data-m="qp" class="gd-l">Qwen3.6 Plus</th>
+      <th data-m="q35">Q3.6-35B-A3B</th>
+      <th data-m="q27">Q3.6-27B</th>
+    </tr></thead>
+    <tbody>
+      <tr class="sh"><td class="rl">──── 実世界SW開発</td><td colspan="11"></td></tr>
+      <tr class="hl">
+        <td class="rl">SWE-bench Verified<span class="cat">GitHub Issue解決率 (%)</span></td>
+        <td class="sc">79.6</td>
+        <td>77.8</td><td>77.8</td>
+        <td class="gd2">80.2</td><td>76.8</td>
+        <td class="na">未公開</td><td class="g">80.2</td><td>74.4</td>
+        <td class="qc gd-l tl2">78.8</td>
+        <td class="qc2">73.4</td>
+        <td class="qc2 tl2">77.2</td>
+      </tr>
+      <tr>
+        <td class="rl">SWE-bench Pro<span class="cat">より難しいバリアント (%)</span></td>
+        <td class="sc dm">~60*</td>
+        <td class="g">58.4</td><td class="na">—</td>
+        <td class="g">58.6🏆</td><td class="na">—</td>
+        <td>56.2</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—<sup>④</sup></td>
+        <td class="qc2">53.5</td>
+      </tr>
+      <tr>
+        <td class="rl">Terminal-Bench 2.0<span class="cat">エージェント端末タスク (%)</span></td>
+        <td class="sc">59.1</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="g">66.7</td><td class="na">—</td>
+        <td class="am2">57.0</td><td class="na">—</td><td>51.0</td>
+        <td class="qc gd-l tl2">61.6</td>
+        <td class="qc2">51.5</td>
+        <td class="qc2">59.3</td>
+      </tr>
+      <tr>
+        <td class="rl">SWE-bench Multilingual<span class="cat">多言語版 (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="gd2">76.7</td><td>73.0</td>
+        <td class="g">76.5</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr class="sh"><td class="rl">──── コーディング能力</td><td colspan="11"></td></tr>
+      <tr>
+        <td class="rl">LiveCodeBench<span class="cat">コンタミ耐性 (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td>52.0</td>
+        <td class="na">—</td><td class="g">85.0</td>
+        <td class="na">—</td><td class="na">—</td><td class="g">86.4</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">SkillsBench<span class="cat">OpenCode 78タスク (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2">40.6</td>
+        <td class="qc2 tl2">48.2</td>
+      </tr>
+      <tr>
+        <td class="rl">MCPMark<span class="cat">MCP tool use (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 tl2">37.0</td>
+        <td class="qc2 na">—</td>
+      </tr>
+    </tbody>
+  </table></div></div>
+
+  <!-- ══ MATH & SCIENCE ══ -->
+  <div class="panel" id="panel-math"><div class="table-wrap"><table>
+    <thead><tr>
+      <th class="rl">ベンチマーク</th>
+      <th class="sc">Sonnet 4.6</th>
+      <th data-m="glm51">GLM-5.1</th>
+      <th data-m="glm5">GLM-5</th>
+      <th data-m="k26">Kimi K2.6★</th>
+      <th data-m="k25">Kimi K2.5</th>
+      <th data-m="m27">MiniMax M2.7</th>
+      <th data-m="m25">MiniMax M2.5</th>
+      <th data-m="step">Step 3.5F</th>
+      <th data-m="qp" class="gd-l">Qwen3.6 Plus</th>
+      <th data-m="q35">Q3.6-35B-A3B</th>
+      <th data-m="q27">Q3.6-27B</th>
+    </tr></thead>
+    <tbody>
+      <tr class="sh"><td class="rl">──── 数学</td><td colspan="11"></td></tr>
+      <tr class="hl">
+        <td class="rl">AIME 2026<span class="cat">数学競技 (%) pass@1</span></td>
+        <td class="sc na">非公開</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="g">96.4</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td><td>86.4</td>
+        <td class="qc gd-l na">—<sup>⑤</sup></td>
+        <td class="qc2">92.7</td>
+        <td class="qc2 tl2">94.1</td>
+      </tr>
+      <tr class="hl">
+        <td class="rl">AIME 2025<span class="cat">数学競技 (%) pass@1</span></td>
+        <td class="sc na">非公開</td>
+        <td class="g">95.3</td><td>92.7</td>
+        <td class="na">—</td><td class="g">96.1</td>
+        <td class="na">—</td><td>86.3</td><td class="est">~88*</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">HMMT Feb 2026<span class="cat">HMMT Competition (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="g">92.7</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td><td>86.4</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2">83.6</td>
+        <td class="qc2 tl2">84.3</td>
+      </tr>
+      <tr>
+        <td class="rl">MATH-500<span class="cat">競技数学 (%)</span></td>
+        <td class="sc am2">89*</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="g">98.0</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr class="sh"><td class="rl">──── 科学推論</td><td colspan="11"></td></tr>
+      <tr class="hl">
+        <td class="rl">GPQA Diamond<span class="cat">PhD級科学推論 (%)</span></td>
+        <td class="sc am2">74.1<sup>⑥</sup></td>
+        <td class="est">~87*</td><td>86.0</td>
+        <td class="g">90.5</td><td class="gd2">87.6</td>
+        <td class="na">未公開</td><td>85.2</td><td>83.5</td>
+        <td class="qc gd-l na">—<sup>⑤</sup></td>
+        <td class="qc2 tl2">86.0</td>
+        <td class="qc2 tl2">87.8</td>
+      </tr>
+      <tr>
+        <td class="rl">MMLU-Pro<span class="cat">難化版MMLU (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td>87.1</td>
+        <td class="na">—</td><td class="na">—</td><td>84.4</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2">85.2</td>
+        <td class="qc2 tl2">86.2</td>
+      </tr>
+      <tr class="sh"><td class="rl">──── 汎用難問</td><td colspan="11"></td></tr>
+      <tr>
+        <td class="rl">HLE Full w/ tools<span class="cat">極難問全分野 (%)</span></td>
+        <td class="sc na">非公開</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="g">54.0🏆</td><td>50.2</td>
+        <td class="na">—</td><td class="na">—</td><td>23.1</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2">21.4</td>
+        <td class="qc2">24.0</td>
+      </tr>
+      <tr>
+        <td class="rl">ARC-AGI-2<span class="cat">視覚的抽象推論 (%)</span></td>
+        <td class="sc bl">60.4</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+    </tbody>
+  </table></div></div>
+
+  <!-- ══ AGENT ══ -->
+  <div class="panel" id="panel-agent"><div class="table-wrap"><table>
+    <thead><tr>
+      <th class="rl">ベンチマーク</th>
+      <th class="sc">Sonnet 4.6</th>
+      <th data-m="glm51">GLM-5.1</th>
+      <th data-m="glm5">GLM-5</th>
+      <th data-m="k26">Kimi K2.6★</th>
+      <th data-m="k25">Kimi K2.5</th>
+      <th data-m="m27">MiniMax M2.7</th>
+      <th data-m="m25">MiniMax M2.5</th>
+      <th data-m="step">Step 3.5F</th>
+      <th data-m="qp" class="gd-l">Qwen3.6 Plus</th>
+      <th data-m="q35">Q3.6-35B-A3B</th>
+      <th data-m="q27">Q3.6-27B</th>
+    </tr></thead>
+    <tbody>
+      <tr class="sh"><td class="rl">──── エージェント</td><td colspan="11"></td></tr>
+      <tr>
+        <td class="rl">OSWorld Verified<span class="cat">GUI自動操作 (%)</span></td>
+        <td class="sc bl">72.5🏆</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr class="hl">
+        <td class="rl">BrowseComp<span class="cat">Web情報収集 (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td>75.9</td>
+        <td class="g">83.2</td>
+        <td class="gd2">78.4<small style="font-size:8px;">(Swarm)</small></td>
+        <td class="na">—</td><td class="na">—</td><td>69.0</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">DeepSearchQA F1<span class="cat">マルチステップ検索 (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="g">92.5🏆</td><td>77.1</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">Toolathlon<span class="cat">ツール使用 (%)</span></td>
+        <td class="sc dm">47.2*</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="g">50.0</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">GDPval-AA Elo<span class="cat">Officeタスク (ELO)</span></td>
+        <td class="sc bl">1633🏆</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td>1495</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">OmniDocBench<span class="cat">文書理解 (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l tl2">91.2🏆</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr class="sh"><td class="rl">──── 汎用</td><td colspan="11"></td></tr>
+      <tr>
+        <td class="rl">Chatbot Arena Elo<span class="cat">人間選好 (ELO)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="g">1451</td>
+        <td class="na">—</td><td class="gd2">1447</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">IFEval<span class="cat">指示追従精度 (%)</span></td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td>88.0</td>
+        <td class="na">—</td><td class="g">94.0</td>
+        <td class="na">—</td><td>87.5</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+      <tr>
+        <td class="rl">AgentSwarm規模</td>
+        <td class="sc na">—</td>
+        <td class="na">—</td><td class="na">—</td>
+        <td class="g">300 agents<br>4,000 steps</td>
+        <td class="am2">100 agents</td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td>
+        <td class="qc gd-l na">—</td>
+        <td class="qc2 na">—</td>
+        <td class="qc2 na">—</td>
+      </tr>
+    </tbody>
+  </table></div></div>
+
+  <!-- ══ LOCAL MODEL INFO ══ -->
+  <div class="panel" id="panel-local"><div class="table-wrap"><table>
+    <thead><tr>
+      <th class="rl">項目</th>
+      <th class="sc">Sonnet 4.6<br><small style="color:var(--text-dim);">参考(API only)</small></th>
+      <th data-m="q35" class="gd-l" style="border-top:2px solid var(--teal);">Qwen3.6-35B-A3B<br><span class="local-badge">🖥 LOCAL</span></th>
+      <th data-m="q27" style="border-top:2px solid #4db6ac;">Qwen3.6-27B<br><span class="local-badge">🖥 LOCAL</span></th>
+    </tr></thead>
+    <tbody>
+      <tr class="sh"><td class="rl">──── ローカル実行情報</td><td colspan="3"></td></tr>
+      <tr>
+        <td class="rl">アーキテクチャ特性</td>
+        <td class="sc na">N/A</td>
+        <td class="qc gd-l">MoE: 35B total / <strong style="color:var(--teal);">3B active</strong><br>推論コスト=実質3Bモデル相当</td>
+        <td class="qc2"><strong style="color:var(--amber);">Dense: 27B all active</strong><br>MoEより単純・安定なデプロイ</td>
+      </tr>
+      <tr>
+        <td class="rl">VRAM目安<span class="cat">推論時アクティブメモリ</span></td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l tl2">~8GB VRAM<br><small style="color:var(--teal);font-size:9px;">(3B activeのため)</small></td>
+        <td class="qc2 am2">~18-24GB VRAM<br><small style="color:#607080;font-size:9px;">(Dense 27Bのため)</small></td>
+      </tr>
+      <tr>
+        <td class="rl">GGUF ダウンロードサイズ</td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l">~18-24GB<br><small style="color:#607080;font-size:9px;">Q4 quant</small></td>
+        <td class="qc2">~15-18GB<br><small style="color:#607080;font-size:9px;">Q4 quant (~18GB reported)</small></td>
+      </tr>
+      <tr>
+        <td class="rl">INT4量子化</td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l tl2">QAT INT4対応<br>2x高速化・50% VRAM削減</td>
+        <td class="qc2 tl2">GGUF (Q3/Q4/Q6)<br>Unsloth Studio対応</td>
+      </tr>
+      <tr>
+        <td class="rl">推論フレームワーク</td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l">vLLM / SGLang<br>KTransformers / Transformers<br>Ollama (GGUF)</td>
+        <td class="qc2">vLLM / SGLang<br>Ollama (GGUF)<br>Unsloth Studio</td>
+      </tr>
+      <tr>
+        <td class="rl">ローカル速度目安</td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l tl2">API: 215 t/s<br><small style="color:var(--teal);font-size:9px;">ローカルはGPU依存</small></td>
+        <td class="qc2">~20 t/s<br><small style="color:#607080;font-size:9px;">RTX A6000 参考値</small></td>
+      </tr>
+      <tr>
+        <td class="rl">コンテキスト長<br>(ローカル)</td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l">262K native<br>→1M (YaRN)<br><small style="color:#607080;font-size:9px;">128K以上推奨(thinking)</small></td>
+        <td class="qc2">262K native<br>→1M (YaRN)<br><small style="color:#607080;font-size:9px;">128K以上推奨(thinking)</small></td>
+      </tr>
+      <tr>
+        <td class="rl">Thinkingモード</td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l tl2">Hybrid thinking<br>preserve_thinking対応</td>
+        <td class="qc2 tl2">Hybrid thinking<br>preserve_thinking対応</td>
+      </tr>
+      <tr>
+        <td class="rl">ライセンス</td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l tl2"><span class="tag-ap">Apache 2.0</span><br>商用利用OK</td>
+        <td class="qc2 tl2"><span class="tag-ap">Apache 2.0</span><br>商用利用OK</td>
+      </tr>
+      <tr>
+        <td class="rl">HuggingFace</td>
+        <td class="sc na">—</td>
+        <td class="qc gd-l" style="font-size:9.5px;">Qwen/Qwen3.6-35B-A3B<br>GGUF: unsloth/...</td>
+        <td class="qc2" style="font-size:9.5px;">Qwen/Qwen3.6-27B<br>GGUF: unsloth/...</td>
+      </tr>
+      <tr class="sh"><td class="rl">──── コスト比較 (ローカル利用)</td><td colspan="3"></td></tr>
+      <tr class="hl">
+        <td class="rl">APIトークンコスト</td>
+        <td class="sc rd">$3/$15 per M</td>
+        <td class="qc gd-l tl2">$0 (ローカル実行)<br><small style="color:var(--teal);font-size:9px;">電力・ハードウェアコスト別途</small></td>
+        <td class="qc2 tl2">$0 (ローカル実行)<br><small style="color:var(--teal);font-size:9px;">電力・ハードウェアコスト別途</small></td>
+      </tr>
+      <tr>
+        <td class="rl">Sonnet比コスト</td>
+        <td class="sc"><span class="rx ba">x1.0</span></td>
+        <td class="qc gd-l"><span class="rx tl">∞ 安 (API無料)</span></td>
+        <td class="qc2"><span class="rx tl">∞ 安 (API無料)</span></td>
+      </tr>
+    </tbody>
+  </table></div></div>
+
+  <!-- ══ SUMMARY ══ -->
+  <div class="panel" id="panel-summary">
+    <div class="info-grid">
+      <div class="info-card" style="border-color:var(--blue);">
+        <h3 style="color:var(--blue);">Claude Sonnet 4.6 ── 基準</h3>
+        <div class="ir"><span class="lb">コスト</span><span class="vl rd">$3/$15/M ── 最高価格</span></div>
+        <div class="ir"><span class="lb">Computer Use</span><span class="vl bl">OSWorld 72.5%🏆 独壇場</span></div>
+        <div class="ir"><span class="lb">Office</span><span class="vl bl">GDPval 1633 Elo🏆</span></div>
+        <div class="ir"><span class="lb">SWE-bench</span><span class="vl">79.6% ── K2.6/M2.5/Q3.6+に並ばれる</span></div>
+        <div class="ir"><span class="lb">GPQA Diamond</span><span class="vl am2">74.1% ── 中国系86〜90%に大差</span></div>
+        <div class="ir"><span class="lb">Terminal-Bench</span><span class="vl">59.1% ── K2.6(66.7%)に負け</span></div>
+      </div>
+      <div class="info-card" style="border-color:#ab47bc;">
+        <h3 style="color:#ce93d8;">Kimi K2.6 ── 2026-04-20 ★</h3>
+        <div class="ir"><span class="lb">コスト</span><span class="vl g">x5.0/x5.4 安</span></div>
+        <div class="ir"><span class="lb">SWE-Pro</span><span class="vl g">58.6%🏆 全モデル首位(自己申告)</span></div>
+        <div class="ir"><span class="lb">GPQA</span><span class="vl g">90.5% ── Sonnet比+16pt</span></div>
+        <div class="ir"><span class="lb">HLE w/tools</span><span class="vl g">54.0%🏆</span></div>
+        <div class="ir"><span class="lb">AgentSwarm</span><span class="vl g">300 agents / 4,000 steps</span></div>
+        <div class="ir"><span class="lb">⚠</span><span class="vl am2" style="font-size:9px;">公開当日 / 独立検証なし</span></div>
+      </div>
+      <div class="info-card" style="border-color:var(--teal);grid-column:span 2;">
+        <h3 style="color:var(--teal);">Qwen3.6シリーズ ── 2026-04 ★★★</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-family:var(--mono);font-size:10px;margin-top:4px;">
+          <div style="padding:8px;background:#0d1820;border:1px solid var(--border);border-radius:3px;">
+            <div style="color:var(--teal);margin-bottom:4px;">Plus (API/Prop.)</div>
+            <div>コスト: x9.2/x7.7 安</div>
+            <div>SWE-bench: 78.8%</div>
+            <div>Terminal-B: 61.6%</div>
+            <div>Context: 1M native</div>
+            <div>Preview: OpenRouter<span style="color:var(--green);"> 無料</span></div>
+          </div>
+          <div style="padding:8px;background:#0d1820;border:1px solid var(--border);border-radius:3px;">
+            <div style="color:var(--teal);margin-bottom:4px;">35B-A3B (LOCAL/API)</div>
+            <div>コスト API: x18.5/x11.5</div>
+            <div><span style="color:var(--green);">LOCAL: $0</span></div>
+            <div>SWE-bench: 73.4%</div>
+            <div>AIME 2026: 92.7%</div>
+            <div>GPQA: 86.0%</div>
+            <div>VRAM: ~8GB(3B active)</div>
+          </div>
+          <div style="padding:8px;background:#0d1820;border:1px solid var(--border);border-radius:3px;">
+            <div style="color:var(--teal);margin-bottom:4px;">27B Dense (LOCAL/API)</div>
+            <div><span style="color:var(--amber);">本日 2026-04-21 リリース</span></div>
+            <div><span style="color:var(--green);">LOCAL: $0 / API未発表</span></div>
+            <div>SWE-bench: 77.2%</div>
+            <div>AIME 2026: 94.1%</div>
+            <div>GPQA: 87.8%</div>
+            <div>VRAM: ~18-24GB (Dense)</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-family:var(--mono);font-size:9.5px;color:var(--text-dim);padding:6px;background:#0a0c0e;border-radius:2px;border:1px solid var(--border);">
+          ⚠ Qwen3.6-Plus の GPQA / AIME は公式未公開。Terminal-Bench 2.0 (61.6%) はClaude Sonnet 4.6(59.1%)を上回る。
+          35B-A3B は 3B active というMoEの極端な疎構造が特徴でVRAM効率は抜群だが、ローカルでは<strong>全重み(35B)のロード</strong>が必要。
+          27B Denseは逆にデプロイが単純でKTransformers/SGLang利用時に安定性が高い。
+        </div>
+      </div>
+      <div class="info-card" style="border-color:#ff6e40;">
+        <h3 style="color:#ff8a65;">GLM-5.1 / GLM-5</h3>
+        <div class="ir"><span class="lb">コスト</span><span class="vl g">x3.0〜3.2 安</span></div>
+        <div class="ir"><span class="lb">SWE-Pro</span><span class="vl am2">58.4% ── K2.6(58.6%)に僅差負け</span></div>
+        <div class="ir"><span class="lb">AIME 2025</span><span class="vl g">95.3%(5.1) / 92.7%(5)</span></div>
+        <div class="ir"><span class="lb">特徴</span><span class="vl" style="font-size:9px;">Huawei製・MIT・8h連続</span></div>
+      </div>
+      <div class="info-card" style="border-color:#29b6f6;">
+        <h3 style="color:#4fc3f7;">MiniMax M2.7 / M2.5</h3>
+        <div class="ir"><span class="lb">コスト</span><span class="vl g">x10〜12.5 安</span></div>
+        <div class="ir"><span class="lb">SWE(M2.5)</span><span class="vl g">80.2% ── Sonnet超え</span></div>
+        <div class="ir"><span class="lb">速度(M2.5)</span><span class="vl g">65/100 t/s</span></div>
+        <div class="ir"><span class="lb">⚠ M2.7</span><span class="vl am2" style="font-size:9px;">非商用ライセンス</span></div>
+      </div>
+      <div class="info-card" style="border-color:#66bb6a;">
+        <h3 style="color:#81c784;">Step 3.5 Flash</h3>
+        <div class="ir"><span class="lb">コスト</span><span class="vl g">x30/x50 安 (最安API)</span></div>
+        <div class="ir"><span class="lb">速度</span><span class="vl g">183 t/s🚀 全APIモデル最速</span></div>
+        <div class="ir"><span class="lb">GPQA</span><span class="vl">83.5%</span></div>
+        <div class="ir"><span class="lb">注意</span><span class="vl dm" style="font-size:9px;">長horizon安定性課題あり</span></div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:14px;margin-top:14px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:1px;margin-bottom:10px;">── 用途別推奨 (2026-04-21)</div>
+      <div class="rec-grid">
+        <div class="rc"><div class="rt">🔧 コーディング Agent(API)</div>
+          <div>1st: Kimi K2.6 (58.6% Pro)</div>
+          <div style="color:var(--text-dim);">2nd: MiniMax M2.5(80.2% Ver.)</div>
+          <div style="color:var(--text-dim);">3rd: Claude Sonnet 4.6</div>
+        </div>
+        <div class="rc"><div class="rt">🖥 コーディング Agent(LOCAL)</div>
+          <div style="color:var(--teal);">1st: Qwen3.6-27B(77.2%)</div>
+          <div style="color:var(--teal);">2nd: Qwen3.6-35B-A3B(73.4%)</div>
+          <div style="color:var(--text-dim);">※ VRAM: 27B≫35B-A3B</div>
+        </div>
+        <div class="rc"><div class="rt">🧮 数学・競技</div>
+          <div>1st: Kimi K2.6 (96.4% AIME26)</div>
+          <div style="color:var(--teal);">2nd: Qwen3.6-27B (94.1%)</div>
+          <div style="color:var(--text-dim);">3rd: GLM-5.1 (95.3% AIME25)</div>
+        </div>
+        <div class="rc"><div class="rt">🔬 科学推論(GPQA)</div>
+          <div>1st: Kimi K2.6 (90.5%)</div>
+          <div style="color:var(--teal);">2nd: Qwen3.6-27B (87.8%)</div>
+          <div style="color:var(--text-dim);">⚠ Sonnet 4.6 は 74.1%</div>
+        </div>
+        <div class="rc"><div class="rt">💼 Computer Use / Office</div>
+          <div style="color:var(--blue);">1st: Claude Sonnet 4.6</div>
+          <div style="color:var(--text-dim);">他: 比較データなし</div>
+          <div style="color:var(--text-dim);">Anthropicの独壇場</div>
+        </div>
+        <div class="rc"><div class="rt">💰 低コスト大規模API</div>
+          <div>1st: Step 3.5 Flash (最安)</div>
+          <div style="color:var(--teal);">2nd: Qwen3.6-Plus (~x9安)</div>
+          <div style="color:var(--text-dim);">3rd: MiniMax M2.5 (x10安)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fn-box">
+    <span class="fn">①</span> Qwen3.6-Plus 料金: OpenRouter $0.325/$1.95/M。Alibaba Bailian ~$0.29/$1.65/M (約x10-12安/Opus比)。Preview期間はOpenRouterで無料。<br>
+    <span class="fn">②</span> Qwen3.6-35B-A3B: OpenRouter $0.163/$1.30/M。Alibaba API $0.38/$2.25/M。ローカル実行はAPIコスト0。<br>
+    <span class="fn">③</span> Qwen3.6-27B は本日(2026-04-21)リリースのためAPI価格未発表。ローカル実行はApache 2.0で商用利用可。<br>
+    <span class="fn">④</span> Qwen3.6-35B-A3B の SWE-bench Pro スコアはHuggingFaceに掲載あるが数値が未確認のため「—」。<br>
+    <span class="fn">⑤</span> Qwen3.6-Plus の GPQA / AIME は公式ベンチマークに未掲載。Terminal-Bench 2.0(61.6%)のみ確認。<br>
+    <span class="fn">⑥</span> Sonnet 4.6 の GPQA 74.1% は Sonnet 4.5(83.4%)より<strong>低下</strong>。Hybrid Adaptive推論への移行トレードオフか。<br>
+    <span class="fn">⚠</span> Qwen3.6-27B / K2.6 は公開直後のため独立検証なし。自己申告スコアは独立評価比2〜5pt低い傾向あり。<br>
+    <span class="fn">⚠</span> ローカルVRAM:「35B-A3Bは8GB推論可」は<em>アクティブ3B分の推論コスト</em>であり、全重みロードには相当のRAM/VRAMが必要。実運用はGPU VRAM 24GB以上推奨。
+  </div>
+</div>
+<script>
+function sp(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
