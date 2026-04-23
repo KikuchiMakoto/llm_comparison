@@ -61,9 +61,9 @@
 
 ### 参考ソース（今回追記分）
 
-- Sonnet 4.5: SWE-bench Verified **77.2%**, OSWorld **61.4%**, 価格 **$3/$15**, リリース **2025-09-29**
+- Sonnet 4.5: SWE-bench Verified **77.2%**, OSWorld **61.4%**, 価格 **$3/M input, $15/M output**, リリース **2025-09-29**
   - https://raw.githubusercontent.com/Java-Edge/Java-Interview-Tutorial/bbf8d8e4480583c2986e1afb00137aa2d103044f/docs/md/AI/llm/claude-4-5-sonnet.md
-- Sonnet 4.6: リリース **2026-02-17**, 価格 **$3/$15**
+- Sonnet 4.6: リリース **2026-02-17**, 価格 **$3/M input, $15/M output**
   - https://raw.githubusercontent.com/Java-Edge/Java-Interview-Tutorial/bbf8d8e4480583c2986e1afb00137aa2d103044f/docs/md/AI/llm/claude-sonnet-4-6.md
 - Opus 4.6: リリース **2026-02-05**, SWE-bench Verified 観測値 **81.42%***, MCP Atlas **62.7%***, Terminal-Bench 2.0 **首位(数値未公開)**
   - https://raw.githubusercontent.com/Java-Edge/Java-Interview-Tutorial/bbf8d8e4480583c2986e1afb00137aa2d103044f/docs/md/AI/llm/claude-opus-4-6.md
