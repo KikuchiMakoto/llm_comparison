@@ -116,8 +116,8 @@
       <span class="badge new">K2.6 NEW</span>
       <span class="badge tl">Qwen3.6 ★3 MODELS</span>
     </div>
-    <h1>中国系 LLM vs Claude Sonnet 4.6 ── 11モデル比較</h1>
-    <div class="subtitle">Sonnet 4.6(基準) / GLM-5.1 / GLM-5 / Kimi K2.6★ / K2.5 / MiniMax M2.7 / M2.5 / Step 3.5 Flash / <span style="color:var(--teal);">Qwen3.6-Plus★ / 35B-A3B★(ローカル) / 27B★(ローカル)</span></div>
+    <h1>LLM比較（シンプル版）</h1>
+    <div class="subtitle">左固定: Opus4.6 / Sonnet4.6 / Opus4.5 / Sonnet4.5（不足データは「—」）</div>
   </div>
 
   <div class="warn">
@@ -128,9 +128,6 @@
   <div class="tabs">
     <button class="tab active" onclick="sp('specs',this)">SPECS &amp; PRICE</button>
     <button class="tab" onclick="sp('coding',this)">CODING</button>
-    <button class="tab" onclick="sp('math',this)">MATH &amp; SCIENCE</button>
-    <button class="tab" onclick="sp('agent',this)">AGENT &amp; GENERAL</button>
-    <button class="tab" onclick="sp('local',this)">LOCAL MODEL INFO</button>
     <button class="tab" onclick="sp('summary',this)">SUMMARY</button>
   </div>
 
@@ -849,6 +846,106 @@ function sp(id,btn){
   document.getElementById('panel-'+id).classList.add('active');
   btn.classList.add('active');
 }
+
+function makeNaCell() {
+  const td = document.createElement('td');
+  td.className = 'na';
+  td.textContent = '—';
+  return td;
+}
+
+function addFixedLeftColumns(table) {
+  const headerRow = table.tHead.rows[0];
+  const sonnet46Th = headerRow.cells[1];
+  if (!sonnet46Th || headerRow.querySelector('[data-m="opus46"]')) return;
+
+  const opus46Th = document.createElement('th');
+  opus46Th.dataset.m = 'opus46';
+  opus46Th.textContent = 'Opus 4.6';
+
+  const opus45Th = document.createElement('th');
+  opus45Th.dataset.m = 'opus45';
+  opus45Th.textContent = 'Opus 4.5';
+
+  const sonnet45Th = document.createElement('th');
+  sonnet45Th.dataset.m = 'sonnet45';
+  sonnet45Th.textContent = 'Sonnet 4.5';
+
+  headerRow.insertBefore(opus46Th, sonnet46Th);
+  headerRow.insertBefore(opus45Th, sonnet46Th.nextSibling);
+  headerRow.insertBefore(sonnet45Th, opus45Th.nextSibling);
+
+  table.tBodies[0].querySelectorAll('tr').forEach((row) => {
+    if (row.cells.length < 2) return;
+    const second = row.cells[1];
+    if (second.hasAttribute('colspan')) {
+      second.colSpan = Number(second.colSpan) + 3;
+      return;
+    }
+    const sonnet46Td = row.cells[1];
+    row.insertBefore(makeNaCell(), sonnet46Td);
+    row.insertBefore(makeNaCell(), sonnet46Td.nextSibling);
+    row.insertBefore(makeNaCell(), sonnet46Td.nextSibling);
+  });
+}
+
+function reorderColumns(table) {
+  const modelOrder = [
+    'opus46', 'sonnet46', 'opus45', 'sonnet45',
+    'k26', 'k25', 'qp', 'm27', 'm25', 'glm51', 'glm5', 'step',
+    'q35', 'q27'
+  ];
+
+  const headerRow = table.tHead.rows[0];
+  const headerCells = Array.from(headerRow.cells);
+  const indexByKey = {};
+
+  headerCells.forEach((cell, idx) => {
+    if (idx === 0) return;
+    const key = cell.dataset.m || (cell.classList.contains('sc') ? 'sonnet46' : null);
+    if (key) indexByKey[key] = idx;
+  });
+
+  const newHeader = [headerCells[0]];
+  modelOrder.forEach((key) => {
+    const idx = indexByKey[key];
+    if (idx !== undefined) newHeader.push(headerCells[idx]);
+  });
+  headerRow.replaceChildren(...newHeader);
+
+  table.tBodies[0].querySelectorAll('tr').forEach((row) => {
+    if (row.cells.length < 2) return;
+    const cells = Array.from(row.cells);
+    if (cells[1].hasAttribute('colspan')) return;
+    const newRow = [cells[0]];
+    modelOrder.forEach((key) => {
+      const idx = indexByKey[key];
+      if (idx !== undefined && cells[idx]) newRow.push(cells[idx]);
+    });
+    row.replaceChildren(...newRow);
+  });
+}
+
+function removePanelsAndTabs() {
+  ['math', 'agent', 'local'].forEach((id) => {
+    const tab = document.querySelector(`.tab[onclick="sp('${id}',this)"]`);
+    const panel = document.getElementById(`panel-${id}`);
+    if (tab) tab.remove();
+    if (panel) panel.remove();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  removePanelsAndTabs();
+  ['panel-specs', 'panel-coding'].forEach((panelId) => {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    const table = panel.querySelector('table');
+    if (!table) return;
+    addFixedLeftColumns(table);
+    reorderColumns(table);
+  });
+});
 </script>
 </body>
 </html>
