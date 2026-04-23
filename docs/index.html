@@ -126,9 +126,7 @@
   </div>
 
   <div class="tabs">
-    <button class="tab active" onclick="sp('specs',this)">SPECS &amp; PRICE</button>
-    <button class="tab" onclick="sp('coding',this)">CODING</button>
-    <button class="tab" onclick="sp('summary',this)">SUMMARY</button>
+    <button class="tab active">SPECS &amp; PRICE + CODING</button>
   </div>
 
   <!-- ══ SPECS ══ -->
@@ -840,13 +838,6 @@
   </div>
 </div>
 <script>
-function sp(id,btn){
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
-  btn.classList.add('active');
-}
-
 function makeNaCell() {
   const td = document.createElement('td');
   td.className = 'na';
@@ -927,7 +918,7 @@ function reorderColumns(table) {
 }
 
 function removePanelsAndTabs() {
-  ['math', 'agent', 'local'].forEach((id) => {
+  ['math', 'agent', 'local', 'summary'].forEach((id) => {
     const tab = document.querySelector(`.tab[onclick="sp('${id}',this)"]`);
     const panel = document.getElementById(`panel-${id}`);
     if (tab) tab.remove();
@@ -937,11 +928,25 @@ function removePanelsAndTabs() {
 
 document.addEventListener('DOMContentLoaded', () => {
   removePanelsAndTabs();
-  ['panel-specs', 'panel-coding'].forEach((panelId) => {
-    const panel = document.getElementById(panelId);
-    if (!panel) return;
-    const table = panel.querySelector('table');
-    if (!table) return;
+  const specsPanel = document.getElementById('panel-specs');
+  const codingPanel = document.getElementById('panel-coding');
+  if (specsPanel && codingPanel) {
+    const codingWrap = codingPanel.querySelector('.table-wrap');
+    if (codingWrap) {
+      const title = document.createElement('div');
+      title.style.margin = '16px 0 8px';
+      title.style.fontFamily = 'var(--mono)';
+      title.style.fontSize = '10px';
+      title.style.color = 'var(--green)';
+      title.style.letterSpacing = '1px';
+      title.textContent = '── CODING';
+      specsPanel.appendChild(title);
+      specsPanel.appendChild(codingWrap);
+    }
+    codingPanel.remove();
+  }
+
+  specsPanel?.querySelectorAll('table').forEach((table) => {
     addFixedLeftColumns(table);
     reorderColumns(table);
   });
