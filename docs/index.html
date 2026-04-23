@@ -937,9 +937,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (specsTable && codingTable) {
       const specsBody = specsTable.querySelector('tbody');
       const codingBody = codingTable.querySelector('tbody');
-      const codingRows = codingBody?.rows;
-      if (specsBody && codingRows && codingRows.length) {
-        Array.from(codingRows).forEach((row) => specsBody.appendChild(row));
+      const codingRows = codingBody ? Array.from(codingBody.rows) : [];
+      if (specsBody && codingRows.length) {
+        codingRows.forEach((row) => specsBody.appendChild(row));
       }
     }
     codingPanel.remove();
