@@ -936,7 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const codingTable = codingPanel.querySelector('table');
     if (specsTable && codingTable) {
       const specsBody = specsTable.tBodies?.[0];
-      const codingRows = codingTable.tBodies[0]?.rows;
+      const codingRows = codingTable.tBodies?.[0]?.rows;
       if (specsBody && codingRows?.length) {
         Array.from(codingRows).forEach((row) => specsBody.appendChild(row));
       }
